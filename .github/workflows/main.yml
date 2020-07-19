@@ -22,8 +22,8 @@ jobs:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
     
-    - name: Codecov
-      uses: codecov/codecov-action@v1.0.11
+    - name: SonarCloud Scan
+      uses: SonarSource/sonarcloud-github-action@v1.3
       with:
-        name: dockerui_codecov
-        token: c39a7399-09bc-47ac-a555-1f5f2fbfdb91
+        # Set the sonar.projectBaseDir analysis property
+        projectBaseDir: .
