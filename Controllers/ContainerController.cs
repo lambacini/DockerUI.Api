@@ -1,4 +1,4 @@
-﻿using DockerUI.Api.Services;
+using DockerUI.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -9,12 +9,12 @@ using System.Threading.Tasks;
 namespace DockerUI.Api.Controllers
 {
     [ApiController]
-    public class DockerController : BaseApiController
+    public class ContainerController : BaseApiController
     {
         private ILogger<DockerController> _logger;
         private DockerService _service;
 
-        public DockerController(ILogger<DockerController> logger, DockerService service)
+        public ContainerController(ILogger<DockerController> logger, DockerService service)
         {
             _logger = logger;
             _service = service;
