@@ -24,3 +24,6 @@ jobs:
     
     - name: Codecov
       uses: codecov/codecov-action@v1.0.11
+      with:
+        name: dockerui_codecov
+        token: c39a7399-09bc-47ac-a555-1f5f2fbfdb91
