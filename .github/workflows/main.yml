@@ -1,4 +1,4 @@
-- name: Codecov
+ name: Codecov
   uses: codecov/codecov-action@v1.0.11
   with:
     # User defined upload name. Visible in Codecov UI
