@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace DockerUI.Api.Controllers
@@ -11,10 +13,10 @@ namespace DockerUI.Api.Controllers
     [ApiController]
     public class ContainerController : BaseApiController
     {
-        private ILogger<DockerController> _logger;
-        private DockerService _service;
+        private ILogger<ContainerController> _logger;
+        private ContainerService _service;
 
-        public ContainerController(ILogger<DockerController> logger, DockerService service)
+        public ContainerController(ILogger<ContainerController> logger, ContainerService service)
         {
             _logger = logger;
             _service = service;
@@ -39,6 +41,30 @@ namespace DockerUI.Api.Controllers
             return SuccessResponse(container).ToOk();
         }
 
+        [HttpGet]
+        [Route("Logs/{containerid}")]
+        public async Task<ActionResult> GetLogs(string containerid)
+        {
+            var containers = await _service.GetContainerLists(200);
+            var container = containers.FirstOrDefault(p => p.ID == containerid);
+            if (container == null)
+                return ErrorResponse($"Container {containerid} not found").ToBadRequest();
+
+            var result = await _service.GetLogs(containerid);
+
+            var streamResult = "";
+            if (result != null)
+            {
+                using (var reader = new StreamReader(result, Encoding.UTF8))
+                {
+                    streamResult = reader.ReadToEnd();
+                }
+            }
+
+            return SuccessResponse(streamResult,"Logs in data").ToOk();
+        }
+
+
         [HttpPost]
         [Route("Start")]
         public async Task<ActionResult> StartContainer(string containerid)
@@ -58,7 +84,7 @@ namespace DockerUI.Api.Controllers
         [Route("Stop")]
         public async Task<ActionResult> StopContainer(string containerid)
         {
-            
+
             var containers = await _service.GetContainerLists(200);
             var container = containers.FirstOrDefault(p => p.ID == containerid);
 
@@ -72,15 +98,17 @@ namespace DockerUI.Api.Controllers
 
         [HttpPost]
         [Route("Rename")]
-        public async Task<ActionResult> RenameContainer(string containerid,string newName){
-            var result = await _service.RenameContainer(containerid,newName);
+        public async Task<ActionResult> RenameContainer(string containerid, string newName)
+        {
+            var result = await _service.RenameContainer(containerid, newName);
 
             return SuccessResponse(result).ToOk();
         }
 
         [HttpDelete]
         [Route("Remove")]
-        public async Task<ActionResult> RemoveContainer(string containerid){
+        public async Task<ActionResult> RemoveContainer(string containerid)
+        {
             var containers = await _service.GetContainerLists(200);
             var container = containers.FirstOrDefault(p => p.ID == containerid);
 

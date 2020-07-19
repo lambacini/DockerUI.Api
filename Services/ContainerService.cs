@@ -3,6 +3,7 @@ using Docker.DotNet.Models;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -129,6 +130,17 @@ namespace DockerUI.Api.Services
             }, new System.Threading.CancellationToken());
 
             return true;
+        }
+
+        public async Task<Stream> GetLogs(string containerid)
+        {
+            var result = await _client.Containers.GetContainerLogsAsync(containerid, new ContainerLogsParameters()
+            {
+                ShowStderr = true,
+                ShowStdout = true
+            });
+
+            return result;
         }
     }
 }

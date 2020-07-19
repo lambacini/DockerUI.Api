@@ -30,7 +30,9 @@ namespace DockerUI.Api
         {
             services.AddDbContext<DockerUIContext>();
             services.AddControllers();
-            services.AddScoped(typeof(DockerService));
+            services.AddScoped(typeof(ContainerService));
+            services.AddScoped(typeof(VolumeService));
+            services.AddScoped(typeof(ImagesService));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
