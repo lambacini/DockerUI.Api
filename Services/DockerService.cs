@@ -93,9 +93,9 @@ namespace DockerUI.Api.Services
 
                 return response;
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
-
+                _logger.LogError(ex, ex.Message);
                 throw;
             }
         }
@@ -109,9 +109,26 @@ namespace DockerUI.Api.Services
 
         public async Task<bool> StopContainer(string containerid)
         {
-            var result = await _client.Containers.StopContainerAsync(containerid, null);
+            var result = await _client.Containers.StopContainerAsync(containerid, new ContainerStopParameters());
 
             return result;
+        }
+
+        public async Task<bool> RemoveContainer(string containerid)
+        {
+            await _client.Containers.RemoveContainerAsync(containerid, new ContainerRemoveParameters());
+
+            return true;
+        }
+
+        public async Task<bool> RenameContainer(string containerid, string newName)
+        {
+            await _client.Containers.RenameContainerAsync(containerid, new ContainerRenameParameters()
+            {
+                NewName = newName
+            }, new System.Threading.CancellationToken());
+
+            return true;
         }
     }
 }
