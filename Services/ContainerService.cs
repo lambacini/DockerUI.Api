@@ -122,6 +122,20 @@ namespace DockerUI.Api.Services
             return true;
         }
 
+        public async Task<bool> KillContainer(string containerid)
+        {
+            await _client.Containers.KillContainerAsync(containerid, new ContainerKillParameters(), default);
+
+            return true;
+        }
+
+        public async Task<bool> PauseContainer(string containerid)
+        {
+            await _client.Containers.PauseContainerAsync(containerid,default);
+
+            return true;
+        }
+
         public async Task<bool> RenameContainer(string containerid, string newName)
         {
             await _client.Containers.RenameContainerAsync(containerid, new ContainerRenameParameters()
@@ -138,7 +152,7 @@ namespace DockerUI.Api.Services
             {
                 ShowStderr = true,
                 ShowStdout = true
-            });
+            }, default);
 
             return result;
         }

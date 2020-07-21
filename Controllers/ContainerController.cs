@@ -1,3 +1,4 @@
+using DockerUI.Api.Dto;
 using DockerUI.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -50,20 +51,24 @@ namespace DockerUI.Api.Controllers
             if (container == null)
                 return ErrorResponse($"Container {containerid} not found").ToBadRequest();
 
-            var result = await _service.GetLogs(containerid);
+            LogResult logresult = new LogResult();
 
-            var streamResult = "";
-            if (result != null)
+            using (var result = await _service.GetLogs(containerid))
             {
-                using (var reader = new StreamReader(result, Encoding.UTF8))
+                UTF8Encoding encoding = new UTF8Encoding(false);
+                using (var reader = new StreamReader(result, encoding))
                 {
-                    streamResult = reader.ReadToEnd();
+                    string nextLine;
+
+                    while ((nextLine = await reader.ReadLineAsync()) != null)
+                    {
+                        logresult.Logs.Add(StringUtils.StripUnicodeCharactersFromString(nextLine));
+                    }
                 }
             }
 
-            return SuccessResponse(streamResult,"Logs in data").ToOk();
+            return SuccessResponse(logresult.Logs, "Logs in data").ToOk();
         }
-
 
         [HttpPost]
         [Route("Start")]
@@ -77,7 +82,7 @@ namespace DockerUI.Api.Controllers
 
             var result = await _service.StartContainer(containerid);
 
-            return SuccessResponse(result).ToOk();
+            return SuccessResponse($"Container {container.Names[0]} successfully stared").ToOk();
         }
 
         [HttpPost]
@@ -93,7 +98,7 @@ namespace DockerUI.Api.Controllers
 
             var result = await _service.StopContainer(containerid);
 
-            return SuccessResponse(result).ToOk();
+            return SuccessResponse($"Container {container.Names[0]} successfully stoped").ToOk();
         }
 
         [HttpPost]
@@ -117,7 +122,39 @@ namespace DockerUI.Api.Controllers
 
             var result = await _service.RemoveContainer(containerid);
 
-            return SuccessResponse(result).ToOk();
+            return SuccessResponse($"Container {container.Names[0]} successfully removed").ToOk();
+        }
+
+        [HttpPost]
+        [Route("Kill")]
+        public async Task<ActionResult> KillContainer(string containerid)
+        {
+
+            var containers = await _service.GetContainerLists(200);
+            var container = containers.FirstOrDefault(p => p.ID == containerid);
+
+            if (container == null)
+                return ErrorResponse("$Container {containerid] not found").ToBadRequest();
+
+            var result = await _service.KillContainer(containerid);
+
+            return SuccessResponse($"Container {container.Names[0]} killed").ToOk();
+        }
+
+        [HttpPost]
+        [Route("Pause")]
+        public async Task<ActionResult> PauseContainer(string containerid)
+        {
+
+            var containers = await _service.GetContainerLists(200);
+            var container = containers.FirstOrDefault(p => p.ID == containerid);
+
+            if (container == null)
+                return ErrorResponse("$Container {containerid] not found").ToBadRequest();
+
+            var result = await _service.PauseContainer(containerid);
+
+            return SuccessResponse($"Container {container.Names[0]} successfully paused").ToOk();
         }
     }
 }

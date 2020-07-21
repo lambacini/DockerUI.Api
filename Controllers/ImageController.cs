@@ -19,5 +19,14 @@ namespace DockerUI.Api.Controllers
             _logger = logger;
             _service = service;
         }
+
+        
+        [HttpGet]
+        public async Task<ActionResult> Get()
+        {
+            var images = await _service.GetImages();
+            return SuccessResponse(images).ToOk();
+        }
+
     }
 }

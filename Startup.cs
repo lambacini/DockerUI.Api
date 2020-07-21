@@ -13,6 +13,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.SpaServices.AngularCli;
 
 namespace DockerUI.Api
 {
@@ -28,6 +29,13 @@ namespace DockerUI.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddControllersWithViews();
+            // In production, the Angular files will be served from this directory
+            // services.AddSpaStaticFiles(configuration =>
+            // {
+            //     configuration.RootPath = "ClientApp/dist";
+            // });
+
             services.AddDbContext<DockerUIContext>();
             services.AddControllers();
             services.AddScoped(typeof(ContainerService));
@@ -42,21 +50,41 @@ namespace DockerUI.Api
             {
                 app.UseDeveloperExceptionPage();
             }
+            else
+            {
+                app.UseExceptionHandler("/Error");
+                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+                app.UseHsts();
+            }
 
+            app.UseDefaultFiles();
             app.UseHttpsRedirection();
+            app.UseStaticFiles();
+
+            app.UseRouting();
 
             app.UseCors(options =>
             {
-                options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+                options
+                    .AllowAnyOrigin()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader();
             });
-            app.UseRouting();
-
-            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-            });
+                        {
+                            endpoints.MapControllerRoute(
+                                name: "default",
+                                pattern: "{controller}/{action=Index}/{id?}");
+                        });
+
+            // app.UseSpa(spa =>
+            // {
+            //     // To learn more about options for serving an Angular SPA from ASP.NET Core,
+            //     // see https://go.microsoft.com/fwlink/?linkid=864501
+
+            //     spa.Options.SourcePath = "ClientApp";
+            // });
         }
     }
 }

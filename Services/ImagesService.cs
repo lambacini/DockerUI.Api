@@ -40,5 +40,11 @@ namespace DockerUI.Api.Services
                 .CreateClient();
         }
 
+        public async Task<IList<ImagesListResponse>> GetImages()
+        {
+            var images = await _client.Images.ListImagesAsync(new ImagesListParameters());
+
+            return images;
+        }
     }
 }
