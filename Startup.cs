@@ -57,6 +57,7 @@ namespace DockerUI.Api
                 app.UseHsts();
             }
 
+            app.UseExceptionMiddleware();
             app.UseDefaultFiles();
             app.UseHttpsRedirection();
             app.UseStaticFiles();
