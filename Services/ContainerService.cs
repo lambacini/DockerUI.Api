@@ -131,7 +131,7 @@ namespace DockerUI.Api.Services
 
         public async Task<bool> PauseContainer(string containerid)
         {
-            await _client.Containers.PauseContainerAsync(containerid,default);
+            await _client.Containers.PauseContainerAsync(containerid, default);
 
             return true;
         }
@@ -146,12 +146,20 @@ namespace DockerUI.Api.Services
             return true;
         }
 
-        public async Task<Stream> GetLogs(string containerid)
+        public async Task<ContainerInspectResponse> InspectContainer(string containerid)
         {
-            var result = await _client.Containers.GetContainerLogsAsync(containerid, new ContainerLogsParameters()
+            var result = await _client.Containers.InspectContainerAsync(containerid);
+            return result;
+        }
+
+        public async Task<MultiplexedStream> GetContainerLogs(string containerid)
+        {
+            var result = await _client.Containers.GetContainerLogsAsync(containerid, false, new ContainerLogsParameters()
             {
                 ShowStderr = true,
-                ShowStdout = true
+                ShowStdout = true,
+                Tail = "100",
+                Follow = false
             }, default);
 
             return result;

@@ -1,5 +1,6 @@
 using System;
 using System.Net;
+using Docker.DotNet;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
@@ -17,11 +18,21 @@ namespace DockerUI.Api.Services
                 {
                     context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
                     context.Response.ContentType = "application/json";
- 
+
                     var contextFeature = context.Features.Get<IExceptionHandlerFeature>();
-                    if(contextFeature != null)
-                    { 
-                        var error = new DockerUI.Api.Dto.ApiErrorResponse<object>(contextFeature.Error.StackTrace,contextFeature.Error.Message);
+                    if (contextFeature != null)
+                    {
+                        DockerUI.Api.Dto.ApiResponseBase<object> error = null;
+                        if (contextFeature.Error is DockerApiException)
+                        {
+                            var dockerException = contextFeature.Error as DockerApiException;
+                            error = new DockerUI.Api.Dto.ApiErrorResponse<object>(dockerException, dockerException.ResponseBody);
+                        }
+                        else
+                        {
+                            error = new DockerUI.Api.Dto.ApiErrorResponse<object>(contextFeature.Error, contextFeature.Error.Message);
+                        }
+
 
                         var result = JsonConvert.SerializeObject(error);
                         await context.Response.WriteAsync(result);

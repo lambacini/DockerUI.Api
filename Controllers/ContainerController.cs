@@ -53,18 +53,26 @@ namespace DockerUI.Api.Controllers
 
             LogResult logresult = new LogResult();
 
-            using (var result = await _service.GetLogs(containerid))
+            using (var result = await _service.GetContainerLogs(containerid))
             {
                 UTF8Encoding encoding = new UTF8Encoding(false);
-                using (var reader = new StreamReader(result, encoding))
-                {
-                    string nextLine;
+                //var temp = await result.ReadOutputToEndAsync(default);
+                //var stdErr = temp.stderr;
+                //var stdOut = temp.stdout;
 
-                    while ((nextLine = await reader.ReadLineAsync()) != null)
-                    {
-                        logresult.Logs.Add(StringUtils.StripUnicodeCharactersFromString(nextLine));
-                    }
-                }
+                
+                var output = await result.ReadOutputToEndAsync(default);
+                string logs = output.ToString();
+                logresult.Logs.Add(logs);
+                //using (StringReader reader = new StringReader(logs))
+                //{
+                //    string nextLine;
+
+                //    while ((nextLine = await reader.ReadLineAsync()) != null)
+                //    {
+                //        logresult.Logs.Add(nextLine);
+                //    }
+                //}
             }
 
             return SuccessResponse(logresult.Logs, "Logs in data").ToOk();
@@ -99,6 +107,21 @@ namespace DockerUI.Api.Controllers
             var result = await _service.StopContainer(containerid);
 
             return SuccessResponse($"Container {container.Names[0]} successfully stoped").ToOk();
+        }
+
+        [HttpGet]
+        [Route("Inspect/{containerid}")]
+        public async Task<ActionResult> InspectContainer(string containerid)
+        {
+            var containers = await _service.GetContainerLists(200);
+            var container = containers.FirstOrDefault(p => p.ID == containerid);
+
+            if (container == null)
+                return ErrorResponse("$Container {containerid] not found").ToBadRequest();
+
+            var result = await _service.InspectContainer(containerid);
+
+            return SuccessResponse(result,"Success").ToOk();
         }
 
         [HttpPost]
