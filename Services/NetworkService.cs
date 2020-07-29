@@ -2,19 +2,17 @@
 using Docker.DotNet.Models;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 namespace DockerUI.Api.Services
 {
-    public class VolumeService
+    public class NetworkService
     {
         private ILogger<DockerService> _logger;
         private DockerClient _client;
 
-        public VolumeService(ILogger<DockerService> logger)
+        public NetworkService(ILogger<DockerService> logger)
         {
             _logger = logger;
             Init();
@@ -44,31 +42,6 @@ namespace DockerUI.Api.Services
         {
             var result = await _client.Volumes.ListAsync();
             return result;
-        }
-
-        public async Task<VolumeResponse> CreateVolume(string name, string driver, IDictionary<string, string> labels = null)
-        {
-            var response = await _client.Volumes.CreateAsync(new VolumesCreateParameters
-            {
-                Name = name,
-                Labels = labels,
-                Driver = driver
-            });
-
-            return response;
-        }
-
-        public async Task<VolumeResponse> InspectVolume(string name)
-        {
-            var result = await _client.Volumes.InspectAsync(name);
-            return result;
-        }
-        
-        public async Task<bool> RemoveVolume(string name, bool force = false)
-        {
-            await _client.Volumes.RemoveAsync(name, force);
-
-            return true;
         }
     }
 }
