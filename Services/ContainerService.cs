@@ -152,6 +152,12 @@ namespace DockerUI.Api.Services
             return result;
         }
 
+        public async Task<Stream> GetContainerStats(string containerid)
+        {
+            var result = await _client.Containers.GetContainerStatsAsync(containerid, new ContainerStatsParameters() { }, default);
+            return result;
+        }
+
         public async Task<MultiplexedStream> GetContainerLogs(string containerid)
         {
             var result = await _client.Containers.GetContainerLogsAsync(containerid, false, new ContainerLogsParameters()

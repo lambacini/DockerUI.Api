@@ -14,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.SpaServices.AngularCli;
+using DockerUI.Api.Hubs;
 
 namespace DockerUI.Api
 {
@@ -39,8 +40,22 @@ namespace DockerUI.Api
             services.AddDbContext<DockerUIContext>();
             services.AddControllers();
             services.AddScoped(typeof(ContainerService));
+            services.AddScoped(typeof(DockerService));
             services.AddScoped(typeof(VolumeService));
             services.AddScoped(typeof(ImagesService));
+            services.AddScoped(typeof(ExecService));
+            services.AddCors(options =>
+            {
+                options.AddPolicy("CorsPolicy", builder =>
+                {
+                    builder
+                    .WithOrigins("http://localhost:4200")
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials();
+                });
+            });
+            services.AddSignalR();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -61,19 +76,22 @@ namespace DockerUI.Api
             app.UseDefaultFiles();
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-
+            app.UseWebSockets();
             app.UseRouting();
+            //app.UseCors(options =>
+            //{
+            //    options
+            //        .AllowAnyOrigin()
+            //        .AllowAnyMethod()
+            //        .AllowCredentials()
+            //        .AllowAnyHeader();
+            //});
 
-            app.UseCors(options =>
-            {
-                options
-                    .AllowAnyOrigin()
-                    .AllowAnyMethod()
-                    .AllowAnyHeader();
-            });
+            app.UseCors("CorsPolicy");
 
             app.UseEndpoints(endpoints =>
                         {
+                            endpoints.MapHub<ContainerHub>("/dockerhub");
                             endpoints.MapControllerRoute(
                                 name: "default",
                                 pattern: "{controller}/{action=Index}/{id?}");

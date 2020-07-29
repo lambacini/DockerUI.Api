@@ -46,5 +46,25 @@ namespace DockerUI.Api.Services
 
             return images;
         }
+
+        public async Task<IList<IDictionary<string, string>>> RemoveImage(string name, bool force = false, bool prune = false)
+        {
+            var result = await _client.Images.DeleteImageAsync(name, new ImageDeleteParameters
+            {
+                Force = force
+            });
+
+            return result;
+        }
+
+        public async Task<IList<ImageSearchResponse>> SearchImage(string name)
+        {
+            var result = await _client.Images.SearchImagesAsync(new ImagesSearchParameters
+            {
+                Term = name
+            });
+
+            return result;
+        }
     }
 }

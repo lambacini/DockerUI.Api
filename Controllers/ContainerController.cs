@@ -16,11 +16,13 @@ namespace DockerUI.Api.Controllers
     {
         private ILogger<ContainerController> _logger;
         private ContainerService _service;
+        private ExecService _execService;
 
-        public ContainerController(ILogger<ContainerController> logger, ContainerService service)
+        public ContainerController(ILogger<ContainerController> logger, ContainerService service, ExecService execService)
         {
             _logger = logger;
             _service = service;
+            _execService = execService;
         }
 
         [HttpGet]
@@ -74,6 +76,52 @@ namespace DockerUI.Api.Controllers
                 //    }
                 //}
             }
+
+            return SuccessResponse(logresult.Logs, "Logs in data").ToOk();
+        }
+
+        [HttpGet]
+        [Route("Stats/{containerid}")]
+        public async Task<ActionResult> GetStats(string containerid)
+        {
+            var containers = await _service.GetContainerLists(200);
+            var container = containers.FirstOrDefault(p => p.ID == containerid);
+            if (container == null)
+                return ErrorResponse($"Container {containerid} not found").ToBadRequest();
+
+            LogResult logresult = new LogResult();
+
+            using (var result = await _service.GetContainerStats(containerid))
+            {
+                UTF8Encoding encoding = new UTF8Encoding(false);
+
+                using (var reader = new StreamReader(result,encoding))
+                {
+                    string nextLine;
+
+                    while ((nextLine = await reader.ReadLineAsync()) != null)
+                    {
+                        logresult.Logs.Add(nextLine);
+                    }
+                }
+            }
+
+            return SuccessResponse(logresult.Logs, "Logs in data").ToOk();
+        }
+
+
+        [HttpGet]
+        [Route("Exec/{containerid}")]
+        public async Task<ActionResult> ExecContainer(string containerid)
+        {
+            var containers = await _service.GetContainerLists(200);
+            var container = containers.FirstOrDefault(p => p.ID == containerid);
+            if (container == null)
+                return ErrorResponse($"Container {containerid} not found").ToBadRequest();
+
+            LogResult logresult = new LogResult();
+
+            
 
             return SuccessResponse(logresult.Logs, "Logs in data").ToOk();
         }

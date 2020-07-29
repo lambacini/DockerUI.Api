@@ -1,5 +1,4 @@
 ﻿using Docker.DotNet;
-using Docker.DotNet.Models;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -9,12 +8,12 @@ using System.Threading.Tasks;
 
 namespace DockerUI.Api.Services
 {
-    public class DockerService
+    public class ExecService
     {
-        private ILogger<DockerService> _logger;
+        private ILogger<ExecService> _logger;
         private DockerClient _client;
 
-        public DockerService(ILogger<DockerService> logger)
+        public ExecService(ILogger<ExecService> logger)
         {
             _logger = logger;
             Init();
@@ -40,19 +39,13 @@ namespace DockerUI.Api.Services
                 .CreateClient();
         }
 
-        public async Task<SystemInfoResponse> GetSystemInfo(string containerid)
+        public async Task<MultiplexedStream> StartAndAttachExec(string containerid)
         {
-            var result = await _client.System.GetSystemInfoAsync();
+            var result = await _client.Exec.StartAndAttachContainerExecAsync(containerid, false);
 
             return result;
         }
 
-        public async Task<VersionResponse> GetVersion(string containerid)
-        {
-            var result = await _client.System.GetVersionAsync();
-
-            return result;
-        }
 
     }
 }

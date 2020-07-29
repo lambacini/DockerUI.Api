@@ -20,7 +20,7 @@ namespace DockerUI.Api.Controllers
             _service = service;
         }
 
-        
+
         [HttpGet]
         public async Task<ActionResult> Get()
         {
@@ -28,5 +28,22 @@ namespace DockerUI.Api.Controllers
             return SuccessResponse(images).ToOk();
         }
 
+        [HttpPost]
+        [Route("Remove")]
+        public async Task<ActionResult> Remove(string name, bool force)
+        {
+            var result = await _service.RemoveImage(name, force);
+            
+            return SuccessResponse<object>(result, "Images successfully deleted").ToOk();
+        }
+
+        [HttpGet]
+        [Route("Search")]
+        public async Task<ActionResult> Search(string name)
+        {
+            var result = await _service.SearchImage(name);
+
+            return SuccessResponse<object>(result).ToOk();
+        }
     }
 }
