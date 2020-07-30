@@ -33,7 +33,7 @@ namespace DockerUI.Api.Controllers
         public async Task<ActionResult> Remove(string name, bool force)
         {
             var result = await _service.RemoveImage(name, force);
-            
+
             return SuccessResponse<object>(result, "Images successfully deleted").ToOk();
         }
 
@@ -44,6 +44,15 @@ namespace DockerUI.Api.Controllers
             var result = await _service.SearchImage(name);
 
             return SuccessResponse<object>(result).ToOk();
+        }
+
+        [HttpGet]
+        [Route("PullImage")]
+        public async Task<ActionResult> PullImage(string repoName, string tag)
+        {
+            var result = await _service.PullImage(repoName, tag);
+
+            return SuccessResponse("Image Downloaded").ToOk();
         }
     }
 }

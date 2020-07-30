@@ -9,12 +9,12 @@ using System.Threading.Tasks;
 
 namespace DockerUI.Api.Services
 {
-    public class VolumeService
+    public class SwarmService
     {
-        private ILogger<DockerService> _logger;
+        private ILogger<SwarmService> _logger;
         private DockerClient _client;
 
-        public VolumeService(ILogger<DockerService> logger)
+        public SwarmService(ILogger<SwarmService> logger)
         {
             _logger = logger;
             Init();
@@ -40,43 +40,23 @@ namespace DockerUI.Api.Services
                 .CreateClient();
         }
 
-        public async Task<VolumesListResponse> GetVolumes()
+        public async Task<string> InitSwarm(SwarmInitParameters swarmPrm)
         {
-            var result = await _client.Volumes.ListAsync();
+            var result = await _client.Swarm.InitSwarmAsync(swarmPrm);
+
             return result;
         }
 
-        public async Task<VolumeResponse> CreateVolume(string name, string driver, IDictionary<string, string> labels = null)
+        public async Task<IEnumerable<NodeListResponse>> ListNodes(string nodeid)
         {
-            var response = await _client.Volumes.CreateAsync(new VolumesCreateParameters
-            {
-                Name = name,
-                Labels = labels,
-                Driver = driver
-            });
+            var result = await _client.Swarm.ListNodesAsync();
 
-            return response;
-        }
-
-        public async Task<VolumeResponse> InspectVolume(string name)
-        {
-            var result = await _client.Volumes.InspectAsync(name);
             return result;
         }
 
-        public async Task<bool> RemoveVolume(string name, bool force = false)
+        public async Task<NodeListResponse> InspectNode(string nodeid)
         {
-            await _client.Volumes.RemoveAsync(name, force);
-
-            return true;
-        }
-
-        public async Task<VolumesPruneResponse> Prune()
-        {
-            var result = await _client.Volumes.PruneAsync(new VolumesPruneParameters
-            {
-
-            });
+            var result = await _client.Swarm.InspectNodeAsync(nodeid);
 
             return result;
         }

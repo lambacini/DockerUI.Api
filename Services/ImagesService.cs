@@ -3,8 +3,10 @@ using Docker.DotNet.Models;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace DockerUI.Api.Services
@@ -65,6 +67,65 @@ namespace DockerUI.Api.Services
             });
 
             return result;
+        }
+
+        public async Task<bool> PullImage(string repoName, string tag)
+        {
+            await _client.Images.CreateImageAsync(new ImagesCreateParameters()
+            {
+                FromImage = repoName,
+                Tag = tag
+            }, null, new ContainerProgress(), default);
+
+            return true;
+        }
+
+        public async Task<Stream> BuildImageFromDockerFile(Stream dockerFile)
+        {
+            var result = await _client.Images.BuildImageFromDockerfileAsync(dockerFile, new ImageBuildParameters
+            {
+
+            });
+
+            return result;
+        }
+
+        public async Task<Stream> SaveImage(string imageName)
+        {
+            var result = await _client.Images.SaveImageAsync(imageName);
+
+            return result;
+        }
+
+        public async Task<bool> LoadImage(Stream imageStream)
+        {
+            await _client.Images.LoadImageAsync(new ImageLoadParameters { }, imageStream, new ContainerProgress());
+
+            return true;
+        }
+
+        public async Task<ImageInspectResponse> InspectImage(string imageName)
+        {
+            var result = await _client.Images.InspectImageAsync(imageName);
+
+            return result;
+        }
+
+        public async Task<IList<ImageHistoryResponse>> GetImageHistory(string imageName)
+        {
+            var result = await _client.Images.GetImageHistoryAsync(imageName);
+
+            return result;
+        }
+
+        public async Task<bool> TagImage(string imageName, string tagName)
+        {
+            await _client.Images.TagImageAsync(imageName, new ImageTagParameters
+            {
+                Tag = tagName
+            });
+
+            return true;
         }
     }
 }
