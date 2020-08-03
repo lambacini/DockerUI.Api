@@ -15,6 +15,10 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.SpaServices.AngularCli;
 using DockerUI.Api.Hubs;
+using DockerUI.Api.Middlewares;
+using DockerUI.Api.WebSocketHandlers;
+using System.Net.WebSockets;
+using DockerUI.Api.Helpers;
 
 namespace DockerUI.Api
 {
@@ -36,6 +40,8 @@ namespace DockerUI.Api
             // {
             //     configuration.RootPath = "ClientApp/dist";
             // });
+
+            services.AddWebSocketManager();
 
             services.AddDbContext<DockerUIContext>();
             services.AddControllers();
@@ -78,6 +84,35 @@ namespace DockerUI.Api
             app.UseStaticFiles();
             app.UseWebSockets();
             app.UseRouting();
+
+            var serviceScopeFactory = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>();
+            var serviceProvider = serviceScopeFactory.CreateScope().ServiceProvider;
+
+            app.MapWebSocketManager("/wsExec", serviceProvider.GetService<ExecMessageHandler>());
+
+            app.Use(async (context, next) =>
+            {
+                if (context.Request.Path == "wsExec")
+                {
+                    if (context.WebSockets.IsWebSocketRequest)
+                    {
+                        WebSocket socket = await context.WebSockets.AcceptWebSocketAsync();
+
+                        ContainerExecSession session = new ContainerExecSession(socket, null);
+                        await session.Exec();
+                    }
+                    else
+                    {
+                        context.Response.StatusCode = 400;
+                    }
+                }
+                else
+                {
+                    await next();
+                }
+            });
+
+
             //app.UseCors(options =>
             //{
             //    options
