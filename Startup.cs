@@ -92,7 +92,7 @@ namespace DockerUI.Api
 
             app.Use(async (context, next) =>
             {
-                if (context.Request.Path == "wsExec")
+                if (context.Request.Path.Value == "wsExec")
                 {
                     if (context.WebSockets.IsWebSocketRequest)
                     {
